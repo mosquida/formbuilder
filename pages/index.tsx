@@ -8,6 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -20,39 +21,37 @@ import Card from '@mui/material/Card';
 import SignatureCanvas from 'react-signature-canvas'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useRef, useState } from 'react';
 
-
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const theme = createTheme();
 
 export default function Home() {
-  const [age, setAge] = React.useState('')
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setAge(event.target.value as string);
-  };
+  let sigCanvas = useRef({})
+  const [imageURL, setImageURL] = useState(null);
 
-  // const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   const data = new FormData(event.currentTarget);
-  //   console.log({
-  //     email: data.get('email'),
-  //     password: data.get('password'),
-  //   });
-  // };
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const create = () => {
+    if (!sigCanvas.isEmpty()) {
+      const URL = sigCanvas.getTrimmedCanvas().toDataURL("image/png");
+      setImageURL(URL);
+      formik.setFieldValue('signature ', URL);
+      handleClose();
+    }
+
+  }
+
+
+  const clear = () => {
+    sigCanvas.clear();
+    setImageURL(null);
+    formik.setFieldValue('signature ', null);
+
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -72,6 +71,18 @@ export default function Home() {
     },
   });
 
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    borderRadius: '5px',
+    boxShadow: 50,
+    p: 4,
+  };
+
   return (
     <>
       <div className="xl:grid xl:grid-cols-5 ">
@@ -87,8 +98,6 @@ export default function Home() {
                   alignItems: 'center',
                 }}
               >
-
-
                 <Typography component="h3" variant="h6">
                   Fill up the following information to complete the contract
 
@@ -163,20 +172,56 @@ export default function Home() {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Card variant="outlined">
-                        <SignatureCanvas penColor='black' canvasProps={{ height: 300, className: 'sigCanvas' }} />
 
-                      </Card>
+                      <div className="block">
+                        <Typography variant="body1" >
+                          Create your Digital Signature
+                        </Typography>
+                        <p className="py-5">
+                          <a className="px-4 py-2 text-white bg-blue-600 rounded-md cursor-pointer" onClick={handleOpen}>Open Signature Pad</a>
+
+                        </p>
+                        {
+                          imageURL &&
+                          <img src={imageURL} alt="signature" className="signature" />
+                        }
+                      </div>
+
+                      <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                      >
+                        <Box sx={style}>
+                          <Typography id="modal-modal-title" variant="h6" component="h3">
+                            Sign your digital signature here
+                          </Typography>
+                          <br></br>
+
+                          <Card variant="outlined">
+                            <SignatureCanvas penColor='black'
+                              canvasProps={{ height: 300, className: 'sigCanvas' }}
+                              ref={(ref) => { sigCanvas = ref }} />
+
+                          </Card>
+                          <div className="flex justify-evenly pt-5">
+                            <a className="px-4 py-2 text-white bg-red-600 rounded-md cursor-pointer" onClick={() => clear()}>Clear</a>
+                            <a className="px-4 py-2 text-white bg-blue-600 rounded-md cursor-pointer" onClick={() => create()}>Create</a>
+                          </div>
+
+
+                        </Box>
+                      </Modal>
 
                     </Grid>
 
-
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                       <FormControlLabel
                         control={<Checkbox value="allowExtraEmails" color="primary" />}
                         label="I want to receive inspiration, marketing promotions and updates via email."
                       />
-                    </Grid>
+                    </Grid> */}
                   </Grid>
                   <Button
                     type="submit"
@@ -195,7 +240,6 @@ export default function Home() {
                   </Grid>
                 </Box>
               </Box>
-              <Copyright sx={{ mt: 5 }} />
             </Container>
           </ThemeProvider >
         </div>
@@ -242,10 +286,11 @@ export default function Home() {
             <br></br>
             <p>
               <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
+              has the option to provide a trusted person to handle the management of his Franchise and we will give the COMPLETE TRAINING and SUPPORT to the said person/s.
             </p>
             <br></br>
             <p>
-              I am now authorizing {formik.values.authFirstName ? formik.values.authFirstName : 'First name, '} {formik.values.authMiddleName ? formik.values.authMiddleName : 'Middle name, '} {formik.values.authLastName ? formik.values.authLastName : 'Last name'} to transact the amount of  <b><u>{formik.values.amount ? formik.values.amount : 'Amount in PHP'}</u></b> pesos on my behalf.
+              I am now authorizing <b><u>{formik.values.authFirstName ? formik.values.authFirstName : 'First name, '} {formik.values.authMiddleName ? formik.values.authMiddleName : 'Middle name, '} {formik.values.authLastName ? formik.values.authLastName : 'Last name'}</u></b> to transact the amount of  <b><u>{formik.values.amount ? formik.values.amount : 'Amount in PHP'}</u></b> pesos on my behalf.
             </p>
             <br></br>
             <p className="text-center text-sm"><i>(Once activated, your payment for your Online Franchise Account is NON-REFUNDABLE.)</i></p>
@@ -259,12 +304,17 @@ export default function Home() {
 
             <br></br>
             <br></br>
-            <p></p>
-            <p className="uppercase">
-              <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
+            <div className="">
+              <p>{
+                imageURL &&
+                <img src={imageURL} alt="signature" className="signature w-20" />
+              }</p>
+              <p className="uppercase">
+                <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
 
-            </p>
-            <p>Signature above printed name</p>
+              </p>
+              <p>Signature above printed name</p>
+            </div>
           </div>
         </div>
       </div>
