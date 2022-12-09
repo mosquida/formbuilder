@@ -22,14 +22,14 @@ import SignatureCanvas from 'react-signature-canvas'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useRef, useState } from 'react';
-
+import axios from 'axios'
 
 const theme = createTheme();
 
 export default function Home() {
 
   let sigCanvas = useRef({})
-  const [imageURL, setImageURL] = useState(null);
+  const [imageURL, setImageURL] = useState(undefined);
 
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -39,17 +39,15 @@ export default function Home() {
     if (!sigCanvas.isEmpty()) {
       const URL = sigCanvas.getTrimmedCanvas().toDataURL("image/png");
       setImageURL(URL);
-      formik.setFieldValue('signature ', URL);
+      formik.setFieldValue("signature", URL);
       handleClose();
     }
-
   }
-
 
   const clear = () => {
     sigCanvas.clear();
-    setImageURL(null);
-    formik.setFieldValue('signature ', null);
+    setImageURL(undefined);
+    formik.setFieldValue("signature", null);
 
   }
 
@@ -59,15 +57,17 @@ export default function Home() {
       middleName: '',
       lastName: '',
       franchise: '',
-      amount: null,
+      amount: undefined,
       authFirstName: '',
       authMiddleName: '',
       authLastName: '',
-      signature: '',
+      signature: undefined,
     },
     // validationSchema: validationSchema,
-    onSubmit: (values: any) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values: any) => {
+      console.log(JSON.stringify(values, null, 2));
+      const res = await axios.post('http://192.168.254.112:5000', values);
+      console.log(res)
     },
   });
 
@@ -151,9 +151,12 @@ export default function Home() {
                           value={formik.values.franchise}
                           onChange={(e) => formik.setFieldValue('franchise', e.target.value as string)}
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          <MenuItem value={"All In One"}>All In One</MenuItem>
+                          <MenuItem value={"Food"}>Food</MenuItem>
+                          <MenuItem value={"Health Essentials"}>Health Essentials</MenuItem>
+                          <MenuItem value={"2in1 (Toktok / Health Essentials)"}>2in1 (Toktok / Health Essentials)</MenuItem>
+                          <MenuItem value={"2in1 (Food / Health Essentials)"}>2in1 (Food / Health Essentials)</MenuItem>
+                          <MenuItem value={"Foodcart"}>Foodcart</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -167,6 +170,41 @@ export default function Home() {
                         name="amount"
                         type="number"
                         value={formik.values.amount}
+                        onChange={formik.handleChange}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        name="authFirstName"
+                        required
+                        fullWidth
+                        id="authFirstName"
+                        label="First Name"
+                        value={formik.values.authFirstName}
+                        onChange={formik.handleChange}
+                        autoFocus
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="authMiddleName"
+                        label="Middle Name"
+                        name="authMiddleName"
+                        value={formik.values.authMiddleName}
+                        onChange={formik.handleChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="authLastName"
+                        label="Last Name"
+                        name="authLastName"
+                        value={formik.values.authLastName}
                         onChange={formik.handleChange}
                       />
                     </Grid>
