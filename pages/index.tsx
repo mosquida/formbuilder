@@ -23,20 +23,38 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useRef, useState } from 'react';
 import axios from 'axios'
+import LinearProgress from '@mui/material/LinearProgress';
+
 
 const theme = createTheme();
 
 export default function Home() {
 
-  let sigCanvas = useRef({})
+  let sigCanvas = useRef<any>()
+  const [result, setresult] = useState('')
+
   const [imageURL, setImageURL] = useState(undefined);
 
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => { setOpen(false) };
+
+  const [openSubmit, setOpenSubmit] = React.useState(false);
+  const handleOpenSubmit = () => setOpenSubmit(true);
+  const handleCloseSubmit = (event: any, reason: any) => {
+    if (reason !== 'backdropClick') {
+      setOpenSubmit(false)
+    }
+  }
+
+  const [openRes, setOpenRes] = React.useState(false);
+  const handleOpenRes = () => setOpenRes(true);
+  const handleCloseRes = () => { setOpenRes(false) };
 
   const create = () => {
+    // @ts-ignore: not exist on type 'MutableRefObject<any>'
     if (!sigCanvas.isEmpty()) {
+      // @ts-ignore: not exist on type 'MutableRefObject<any>'
       const URL = sigCanvas.getTrimmedCanvas().toDataURL("image/png");
       setImageURL(URL);
       formik.setFieldValue("signature", URL);
@@ -45,6 +63,7 @@ export default function Home() {
   }
 
   const clear = () => {
+    // @ts-ignore: not exist on type 'MutableRefObject<any>'
     sigCanvas.clear();
     setImageURL(undefined);
     formik.setFieldValue("signature", null);
@@ -64,12 +83,38 @@ export default function Home() {
       signature: undefined,
     },
     // validationSchema: validationSchema,
-    onSubmit: async (values: any) => {
-      console.log(JSON.stringify(values, null, 2));
-      const res = await axios.post('http://192.168.254.112:5000', values);
-      console.log(res)
+    onSubmit: (values: any) => {
+      // console.log(JSON.stringify(values, null, 2));
+      handleOpenSubmit()
+      axios.post('http://192.168.254.112:5000', values).then((res) => {
+        console.log("res", res)
+
+        if (res.statusText === "OK") {
+          setOpenSubmit(false)
+          setresult("Submitted successfully.")
+          handleOpenRes()
+
+        }
+        if (res.data.message === "err") {
+          setOpenSubmit(false)
+          setresult("Something went wrong, Please try again")
+          handleOpenRes()
+        }
+      }).catch((err) => {
+        setOpenSubmit(false)
+        setresult("Something went wrong, Please try again")
+        handleOpenRes()
+
+      });
+
     },
   });
+
+  const handleBackdropClick = (event: any) => {
+    //these fail to keep the modal open
+    event.stopPropagation();
+    return false;
+  };
 
   const style = {
     position: 'absolute' as 'absolute',
@@ -85,6 +130,43 @@ export default function Home() {
 
   return (
     <>
+      <Modal
+        open={openRes}
+        onClose={handleCloseRes}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6">
+            {result}
+          </Typography>
+          <br></br>
+
+        </Box>
+      </Modal>
+
+      <Modal
+        open={openSubmit}
+        onClose={handleCloseSubmit}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        onBackdropClick={handleBackdropClick}
+        disableEscapeKeyDown
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6">
+            Please wait while we generate the contract for you.
+          </Typography>
+          <br></br>
+
+          <Box sx={{ width: '100%' }}>
+            <LinearProgress />
+          </Box>
+
+        </Box>
+      </Modal>
+
+
       <div className="xl:grid xl:grid-cols-5 ">
         <div className=" col-span-2 px-10 xl:max-h-screen overflow-y-auto">
           <ThemeProvider theme={theme}>
@@ -104,6 +186,11 @@ export default function Home() {
                 </Typography>
                 <Box component="form" noValidate onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
+                    <Grid item sm={12}>
+                      <Typography variant="body1" >
+                        1. Clients Name
+                      </Typography>
+                    </Grid>
                     <Grid item xs={12} sm={4}>
                       <TextField
                         autoComplete="given-name"
@@ -140,7 +227,15 @@ export default function Home() {
                         onChange={formik.handleChange}
                       />
                     </Grid>
+                    <div className="pb-5">
+                      <span className="text-white">.</span>
+                    </div>
 
+                    <Grid item sm={12}>
+                      <Typography variant="body1" >
+                        2. Franchise Package
+                      </Typography>
+                    </Grid>
                     <Grid item xs={12}>
                       <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Franchise</InputLabel>
@@ -160,7 +255,15 @@ export default function Home() {
                         </Select>
                       </FormControl>
                     </Grid>
+                    <div className="pb-5">
+                      <span className="text-white">.</span>
+                    </div>
 
+                    <Grid item sm={12}>
+                      <Typography variant="body1" >
+                        3. Amount Payment
+                      </Typography>
+                    </Grid>
                     <Grid item xs={12}>
                       <TextField
                         required
@@ -173,7 +276,15 @@ export default function Home() {
                         onChange={formik.handleChange}
                       />
                     </Grid>
+                    <div className="pb-5">
+                      <span className="text-white">.</span>
+                    </div>
 
+                    <Grid item sm={12}>
+                      <Typography variant="body1" >
+                        4. Authorized Person to handle payment
+                      </Typography>
+                    </Grid>
                     <Grid item xs={12} sm={4}>
                       <TextField
                         name="authFirstName"
@@ -208,15 +319,17 @@ export default function Home() {
                         onChange={formik.handleChange}
                       />
                     </Grid>
-
+                    <div className="pb-5">
+                      <span className="text-white">.</span>
+                    </div>
                     <Grid item xs={12}>
 
-                      <div className="block">
+                      <div className="block pb-10">
                         <Typography variant="body1" >
-                          Create your Digital Signature
+                          5. Create your Digital Signature
                         </Typography>
                         <p className="py-5">
-                          <a className="px-4 py-2 text-white bg-blue-600 rounded-md cursor-pointer" onClick={handleOpen}>Open Signature Pad</a>
+                          <a className="px-4 py-3 text-white bg-black text-sm rounded-md cursor-pointer" onClick={handleOpen}>Open Signature Pad</a>
 
                         </p>
                         {
@@ -232,7 +345,7 @@ export default function Home() {
                         aria-describedby="modal-modal-description"
                       >
                         <Box sx={style}>
-                          <Typography id="modal-modal-title" variant="h6" component="h3">
+                          <Typography id="modal-modal-title" variant="h6">
                             Sign your digital signature here
                           </Typography>
                           <br></br>
@@ -240,15 +353,14 @@ export default function Home() {
                           <Card variant="outlined">
                             <SignatureCanvas penColor='black'
                               canvasProps={{ height: 300, className: 'sigCanvas' }}
+                              // @ts-ignore: not exist on type 'MutableRefObject<any>'
                               ref={(ref) => { sigCanvas = ref }} />
 
                           </Card>
                           <div className="flex justify-evenly pt-5">
-                            <a className="px-4 py-2 text-white bg-red-600 rounded-md cursor-pointer" onClick={() => clear()}>Clear</a>
-                            <a className="px-4 py-2 text-white bg-blue-600 rounded-md cursor-pointer" onClick={() => create()}>Create</a>
+                            <a className="px-4 py-2 text-sm text-white bg-red-600 rounded-md cursor-pointer" onClick={() => clear()}>Clear</a>
+                            <a className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md cursor-pointer" onClick={() => create()}>Create</a>
                           </div>
-
-
                         </Box>
                       </Modal>
 
@@ -261,28 +373,27 @@ export default function Home() {
                       />
                     </Grid> */}
                   </Grid>
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    Sign Up
-                  </Button>
-                  <Grid container justifyContent="flex-end">
+                  <div className="text-center">
+                    <button type="submit" className="w-full bg-green-700 text-white py-2 rounded-md"> Submit Contract</button>
+                  </div>
+                  {/* <Grid container justifyContent="flex-end">
                     <Grid item>
                       <Link href="#" variant="body2">
                         Already have an account? Sign in
                       </Link>
                     </Grid>
-                  </Grid>
+                  </Grid> */}
+                  <div className="pb-10"></div>
                 </Box>
               </Box>
             </Container>
           </ThemeProvider >
         </div>
         <div className=" col-span-3 px-10 py-16 bg-grid xl:max-h-screen overflow-y-auto">
-          <div className="bg-white px-16 py-16">
+          <div className="bg-white px-16 py-16 max-w-3xl m-auto">
+            <div className="flex justify-center pb-10">
+              <img src="/eralista.png" alt="" className=" w-60" />
+            </div>
             <p>
               This is to confirm that <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b> will avail of the <b><u>{formik.values.franchise ? formik.values.franchise : 'Franchise Type'}</u></b> Franchise Package amounting to <b><u>{formik.values.amount ? formik.values.amount : 'Amount in PHP'}</u></b> pesos only.
             </p>
@@ -323,12 +434,11 @@ export default function Home() {
             <br></br>
             <br></br>
             <p>
-              <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
-              has the option to provide a trusted person to handle the management of his Franchise and we will give the COMPLETE TRAINING and SUPPORT to the said person/s.
+              <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b> has the option to provide a trusted person to handle the management of his Franchise and we will give the COMPLETE TRAINING and SUPPORT to the said person/s.
             </p>
             <br></br>
             <p>
-              I am now authorizing <b><u>{formik.values.authFirstName ? formik.values.authFirstName : 'First name, '} {formik.values.authMiddleName ? formik.values.authMiddleName : 'Middle name, '} {formik.values.authLastName ? formik.values.authLastName : 'Last name'}</u></b> to transact the amount of  <b><u>{formik.values.amount ? formik.values.amount : 'Amount in PHP'}</u></b> pesos on my behalf.
+              I am now authorizing <b><u>{formik.values.authFirstName ? formik.values.authFirstName : 'First name, '}&nbsp;{formik.values.authMiddleName ? formik.values.authMiddleName : 'Middle name, '}&nbsp;{formik.values.authLastName ? formik.values.authLastName : 'Last name'}</u></b> to transact the amount of  <b><u>{formik.values.amount ? formik.values.amount : 'Amount in PHP'}</u></b> pesos on my behalf.
             </p>
             <br></br>
             <p className="text-center text-sm"><i>(Once activated, your payment for your Online Franchise Account is NON-REFUNDABLE.)</i></p>
@@ -345,7 +455,7 @@ export default function Home() {
             <div className="">
               <p>{
                 imageURL &&
-                <img src={imageURL} alt="signature" className="signature w-20" />
+                <img src={imageURL} alt="signature" className="signature w-28" />
               }</p>
               <p className="uppercase">
                 <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
