@@ -24,6 +24,8 @@ import * as yup from 'yup';
 import { useRef, useState } from 'react';
 import axios from 'axios'
 import LinearProgress from '@mui/material/LinearProgress';
+import FormHelperText from '@mui/material/FormHelperText';
+
 
 
 const theme = createTheme();
@@ -36,7 +38,11 @@ export default function Home() {
   const [imageURL, setImageURL] = useState(undefined);
 
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+    formik.setTouched({ ...formik.touched, ["signature"]: true });
+
+  }
   const handleClose = () => { setOpen(false) };
 
   const [openSubmit, setOpenSubmit] = React.useState(false);
@@ -70,6 +76,20 @@ export default function Home() {
 
   }
 
+
+  const validationSchema = yup.object({
+    firstName: yup.string().required('Your first name is required'),
+    middleName: yup.string().required('Your middle name is required'),
+    lastName: yup.string().required('Your last name is required'),
+    franchise: yup.string().required('Franchise name is required'),
+    amount: yup.number().required('Amount Payment is required'),
+    authFirstName: yup.string().required("Sponsor's first name is required"),
+    authMiddleName: yup.string().required("Sponsor's middle name is required"),
+    authLastName: yup.string().required("Sponsor's last name is required"),
+    signature: yup.string().required("Signature is required")
+
+  });
+
   const formik = useFormik({
     initialValues: {
       firstName: '',
@@ -82,7 +102,7 @@ export default function Home() {
       authLastName: '',
       signature: undefined,
     },
-    // validationSchema: validationSchema,
+    validationSchema: validationSchema,
     onSubmit: (values: any) => {
       // console.log(JSON.stringify(values, null, 2));
       handleOpenSubmit()
@@ -97,12 +117,13 @@ export default function Home() {
         }
         if (res.data.message === "err") {
           setOpenSubmit(false)
-          setresult("Something went wrong, Please try again")
+          setresult("Something went wrong, Please try again sdsd")
           handleOpenRes()
         }
       }).catch((err) => {
         setOpenSubmit(false)
         setresult("Something went wrong, Please try again")
+        console.log(err)
         handleOpenRes()
 
       });
@@ -202,6 +223,9 @@ export default function Home() {
                         value={formik.values.firstName}
                         onChange={formik.handleChange}
                         autoFocus
+                        error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+                        helperText={formik.touched.firstName && formik.errors.firstName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -214,6 +238,9 @@ export default function Home() {
                         autoComplete="family-name"
                         value={formik.values.middleName}
                         onChange={formik.handleChange}
+                        error={formik.touched.middleName && Boolean(formik.errors.middleName)}
+                        helperText={formik.touched.middleName && formik.errors.middleName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -225,6 +252,9 @@ export default function Home() {
                         name="lastName"
                         value={formik.values.lastName}
                         onChange={formik.handleChange}
+                        error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                        helperText={formik.touched.lastName && formik.errors.lastName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <div className="pb-5">
@@ -237,7 +267,7 @@ export default function Home() {
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                      <FormControl fullWidth>
+                      <FormControl fullWidth onBlur={formik.handleBlur} error={formik.touched.franchise && Boolean(formik.errors.franchise)}>
                         <InputLabel id="demo-simple-select-label">Franchise</InputLabel>
                         <Select
                           labelId="franchise"
@@ -253,6 +283,10 @@ export default function Home() {
                           <MenuItem value={"2in1 (Food / Health Essentials)"}>2in1 (Food / Health Essentials)</MenuItem>
                           <MenuItem value={"Foodcart"}>Foodcart</MenuItem>
                         </Select>
+
+                        <FormHelperText >{formik.touched.franchise && formik.errors.franchise}</FormHelperText>
+
+
                       </FormControl>
                     </Grid>
                     <div className="pb-5">
@@ -274,6 +308,9 @@ export default function Home() {
                         type="number"
                         value={formik.values.amount}
                         onChange={formik.handleChange}
+                        error={formik.touched.amount && Boolean(formik.errors.amount)}
+                        helperText={formik.touched.amount && formik.errors.amount}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <div className="pb-5">
@@ -295,6 +332,9 @@ export default function Home() {
                         value={formik.values.authFirstName}
                         onChange={formik.handleChange}
                         autoFocus
+                        error={formik.touched.authFirstName && Boolean(formik.errors.authFirstName)}
+                        helperText={formik.touched.authFirstName && formik.errors.authFirstName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -306,6 +346,9 @@ export default function Home() {
                         name="authMiddleName"
                         value={formik.values.authMiddleName}
                         onChange={formik.handleChange}
+                        error={formik.touched.authMiddleName && Boolean(formik.errors.authMiddleName)}
+                        helperText={formik.touched.authMiddleName && formik.errors.authMiddleName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -317,6 +360,9 @@ export default function Home() {
                         name="authLastName"
                         value={formik.values.authLastName}
                         onChange={formik.handleChange}
+                        error={formik.touched.authLastName && Boolean(formik.errors.authLastName)}
+                        helperText={formik.touched.authLastName && formik.errors.authLastName}
+                        onBlur={formik.handleBlur}
                       />
                     </Grid>
                     <div className="pb-5">
@@ -336,6 +382,9 @@ export default function Home() {
                           imageURL &&
                           <img src={imageURL} alt="signature" className="signature" />
                         }
+                        <div className="!text-red-500 pl-4">
+                          <FormHelperText error={true} >{formik.touched.signature && formik.errors.signature}</FormHelperText>
+                        </div>
                       </div>
 
                       <Modal
