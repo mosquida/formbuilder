@@ -188,8 +188,8 @@ export default function Home() {
       </Modal>
 
 
-      <div className="xl:grid xl:grid-cols-5 ">
-        <div className=" col-span-2 px-10 xl:max-h-screen overflow-y-auto">
+      <div className="lg:grid lg:grid-cols-5 ">
+        <div className=" col-span-2 px-10 lg:max-h-screen overflow-y-auto">
           <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="sm">
               <CssBaseline />
@@ -438,7 +438,7 @@ export default function Home() {
             </Container>
           </ThemeProvider >
         </div>
-        <div className=" col-span-3 px-10 py-16 bg-grid xl:max-h-screen overflow-y-auto">
+        <div className=" col-span-3 px-10 py-16 bg-grid lg:max-h-screen overflow-y-auto">
           <div className="bg-white px-16 py-16 max-w-3xl m-auto">
             <div className="flex justify-center pb-10">
               <img src="/eralista.png" alt="" className=" w-60" />
