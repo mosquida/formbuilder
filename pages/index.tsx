@@ -76,6 +76,19 @@ export default function Home() {
 
   }
 
+  let date = new Date()
+  let day = date.getDate();
+  let month = date.getMonth() + 1;
+  let year = date.getFullYear();
+
+  let fullDate = `${getMonth(month)} ${day}, ${year}`;
+
+  function getMonth(month: number) {
+    let monthFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return monthFull[month - 1]
+  }
+
+
 
   const validationSchema = yup.object({
     firstName: yup.string().required('Your first name is required'),
@@ -501,16 +514,27 @@ export default function Home() {
 
             <br></br>
             <br></br>
-            <div className="">
-              <p>{
-                imageURL &&
-                <img src={imageURL} alt="signature" className="signature w-28" />
-              }</p>
-              <p className="uppercase">
-                <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
+            <p>{
+              imageURL &&
+              <img src={imageURL} alt="signature" className="signature w-28" />
+            }</p>
+            <div className="flex gap-10 content-end">
+              <div>
 
-              </p>
-              <p>Signature above printed name</p>
+                <p className="uppercase">
+                  <b><u>{formik.values.firstName ? formik.values.firstName : 'First name,'}&nbsp;{formik.values.middleName ? formik.values.middleName : 'Middle name, '}&nbsp;{formik.values.lastName ? formik.values.lastName : 'Last name '}</u></b>
+
+                </p>
+                <p>Signature above printed name</p>
+              </div>
+
+              <div>
+                <p className="">
+                  <b><u>{fullDate}</u></b>
+
+                </p>
+                <p>Date</p>
+              </div>
             </div>
           </div>
         </div>
