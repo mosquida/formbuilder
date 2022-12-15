@@ -25,12 +25,14 @@ import { useRef, useState } from 'react';
 import axios from 'axios'
 import LinearProgress from '@mui/material/LinearProgress';
 import FormHelperText from '@mui/material/FormHelperText';
-
+import { useRouter } from 'next/router';
 
 
 const theme = createTheme();
 
 export default function Home() {
+
+  const router = useRouter()
 
   let sigCanvas = useRef<any>()
   const [result, setresult] = useState('')
@@ -73,7 +75,6 @@ export default function Home() {
     sigCanvas.clear();
     setImageURL(undefined);
     formik.setFieldValue("signature", null);
-
   }
 
   let date = new Date()
@@ -125,9 +126,10 @@ export default function Home() {
         if (res.statusText === "OK") {
           setOpenSubmit(false)
           setresult("Submitted successfully.")
-          handleOpenRes()
-
+          handleOpenRes();
+          router.reload();
         }
+
         if (res.data.message === "err") {
           setOpenSubmit(false)
           setresult("Something went wrong, Please try again sdsd")
