@@ -89,8 +89,6 @@ export default function Home() {
     return monthFull[month - 1]
   }
 
-
-
   const validationSchema = yup.object({
     firstName: yup.string().required('Your first name is required'),
     middleName: yup.string().required('Your middle name is required'),
@@ -120,7 +118,8 @@ export default function Home() {
     onSubmit: (values: any) => {
       // console.log(JSON.stringify(values, null, 2));
       handleOpenSubmit()
-      axios.post('http://192.168.254.112:5000', values).then((res) => {
+      // 127.0.0.1
+      axios.post('http://192.168.254.123:5000', values).then((res) => {
         console.log("res", res)
 
         if (res.statusText === "OK") {
